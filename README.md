@@ -9,6 +9,6 @@ Students are expected to:
 Student Info
 =========================
 
-* Student Name: USTH ICT1 
-* Student ID: Not-Vietnamese
+* Student Name: Do Trung Kien ICT1 
+* Student ID: 23BI14238
 
