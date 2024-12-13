@@ -9,6 +9,6 @@ Students are expected to:
 Student Info
 =========================
 
-* Student Name: Do Trung Kien ICT1
+* Student Name: Do Trung Kien USTH ICT1
 * Student ID: 23BI14238
 
