@@ -1,6 +1,6 @@
 import re
 
-#Function to input the number of students
+# Function to input the number of students
 def input_num_of_std():
     while True:
         try:
@@ -12,7 +12,7 @@ def input_num_of_std():
         except ValueError:
             print("Invalid input. Please enter an integer.")
 
-#Function to input student information
+# Function to input student information
 def input_std_info(data):
     num_students = data.get("num_students", 0)
     if num_students <= 0:
@@ -46,6 +46,39 @@ def list_students(data):
         for student in data["students"]:
             print(f"ID: {student['id']}, Name: {student['name']}, DOB: {student['dob']}")
 
+# Function to input the number of courses
+def input_num_of_courses():
+    while True:
+        try:
+            num_courses = int(input("Enter the number of courses: "))
+            if num_courses > 0:
+                return num_courses
+            else:
+                print("Please enter a positive number.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
+# Function to input course information
+def input_course_info(data):
+    num_courses = data.get("num_courses", 0)
+    if num_courses <= 0:
+        print("Please input the number of courses first.")
+        return
+    for _ in range(num_courses):
+        course_id = input("Enter course ID: ")
+        course_name = input("Enter course name: ")
+        data["courses"].append({"id": course_id, "name": course_name})
+    print("Course information successfully recorded.")
+
+# Function to display course
+def list_courses(data):
+    if not data['courses']:
+        print("No courses available.")
+    else:
+        print("\nCourses: ")
+        for courses in data["courses"]:
+            print(f"Course ID: {courses['id']}, Course Name: {courses['name']}")
+
 # Function to display and select the function
 def input_function(data):
     while True:
@@ -66,9 +99,9 @@ def input_function(data):
         elif option == "2":
             input_std_info(data)
         elif option == "3":
-            print("Input number of courses")
+            data["num_courses"] = input_num_of_courses()
         elif option == "4":
-            print("Input course information: id, name")
+            input_course_info(data)
         elif option == "5":
             print("Select a course, input marks for student in this course")
         elif option == "6":
@@ -81,7 +114,7 @@ def main():
     data = {
         "num_student": 0,
         "students": [],
-        "num_course": 0,
+        "num_courses": 0,
         "courses": [],
         "marks": {}
     }
@@ -105,7 +138,7 @@ def main():
         if choice == 1:
             input_function(data)
         elif choice == 2:
-            print("Listing courses...")
+            list_courses(data)
         elif choice == 3:
             list_students(data)
         elif choice == 4:
