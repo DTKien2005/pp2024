@@ -20,7 +20,13 @@ def input_std_info(data):
         return
 
     for _ in range(num_students):
-        student_id = input("Enter student ID: ")
+        while True:
+            student_id = input("Enter student ID: ")
+            if any(students["id"] == student_id for students in data["students"]):
+                print("Student ID already exists. Please enter a unique ID.")
+            else:
+                break
+
         while True:
             student_name = input("Enter student name: ")
             if re.match(r"^[A-Za-z\s]+$", student_name):  # Only allows letters and spaces
@@ -36,15 +42,6 @@ def input_std_info(data):
                 print("Invalid date format. Please use DD/MM/YYYY.")
         data["students"].append({"id": student_id, "name": student_name, "dob": student_dob})
     print("Student information successfully recorded.")
-
-# Function to list all students
-def list_students(data):
-    if not data["students"]:
-        print("No students available.")
-    else:
-        print("\nStudents:")
-        for student in data["students"]:
-            print(f"ID: {student['id']}, Name: {student['name']}, DOB: {student['dob']}")
 
 # Function to input the number of courses
 def input_num_of_courses():
@@ -65,10 +62,61 @@ def input_course_info(data):
         print("Please input the number of courses first.")
         return
     for _ in range(num_courses):
-        course_id = input("Enter course ID: ")
+        while True:
+            course_id = input("Enter course ID: ")
+            if any(courses["id"] == course_id for courses in data["courses"]):
+                print("Course ID already exists. Please enter a unique ID.")
+            else:
+                break
         course_name = input("Enter course name: ")
         data["courses"].append({"id": course_id, "name": course_name})
     print("Course information successfully recorded.")
+
+# Function to input marks
+def input_course_marks(data):
+    if not data["courses"]:
+        print("No courses available. Please input course information first.")
+        return
+    if not data["students"]:
+        print("No students available. Please input student information first.")
+        return
+    list_courses(data)
+    course_id = input("Enter the course ID to input marks: ")
+    course = next((c for c in data["courses"] if c["id"] == course_id), None)
+    if not course:
+        print("Invalid course ID.")
+    if course_id not in data["marks"]:
+        data["marks"][course_id] = {}
+    for students in data["students"]:
+        while True:
+            try:
+                mark = float(input(f"Enter marks for {students['name']} (ID: {students['id']}): "))
+                if 0 <= mark <= 20:
+                    data["marks"][course_id][students["id"]] = mark
+                    break
+                else:
+                    print("Please enter a mark between 0 and 20.")
+            except ValueError:
+                print("Invalid input. Please enter a valid number.")
+    print("Marks successfully recorded.")
+
+# Function to list all students
+def list_students(data):
+    if not data["students"]:
+        print("No students available.")
+    else:
+        print("\nStudents:")
+        for student in data["students"]:
+            print(f"ID: {student['id']}, Name: {student['name']}, DOB: {student['dob']}")
+
+# Function to list all name student and student id
+def list_id(data):
+    if not data["students"]:
+        print("No students available.")
+    else:
+        print("\nStudents:")
+        for student in data["students"]:
+            print(f"ID: {student['id']}, Name: {student['name']}")
 
 # Function to display course
 def list_courses(data):
@@ -78,6 +126,26 @@ def list_courses(data):
         print("\nCourses: ")
         for courses in data["courses"]:
             print(f"Course ID: {courses['id']}, Course Name: {courses['name']}")
+
+# Function to show a student marks
+def show_std_marks(data):
+    if not data["marks"]:
+        print("No marks recorded.")
+        return
+    list_id(data)
+    student_id = input("Enter student ID to view mark: ")
+    student = next((s for s in data["students"] if s["id"] == student_id), None)
+    if not student:
+        print("Invalid student ID.")
+        return
+    print(f"\nMarks for Student: {student['name']} (ID: {student['id']})")
+    found_marks = False
+    for course_id, marks in data["marks"].items():
+        if student_id in marks:
+            found_marks = True
+            print(f"Course: {next(c['name'] for c in data['courses'] if c['id'] == course_id)} - Mark: {marks[student_id]}")
+    if not found_marks:
+        print("No marks recorded for this student.")
 
 # Function to display and select the function
 def input_function(data):
@@ -103,7 +171,7 @@ def input_function(data):
         elif option == "4":
             input_course_info(data)
         elif option == "5":
-            print("Select a course, input marks for student in this course")
+            input_course_marks(data)
         elif option == "6":
             print("Returning to main menu...")
             break  # Exit the loop and return to the main menu
@@ -142,7 +210,7 @@ def main():
         elif choice == 3:
             list_students(data)
         elif choice == 4:
-            print("Showing student marks...")
+            show_std_marks(data)
         elif choice == 5:
             print("Exiting the program.")
             break
