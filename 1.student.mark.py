@@ -1,4 +1,12 @@
 import re
+import os
+
+# Clear the terminal
+def clear_screen():
+    if os.getenv("TERM"):
+        os.system('clear')
+    else:
+        print("\n" * 50)
 
 # Function to input the number of students
 def input_num_of_std():
@@ -150,6 +158,7 @@ def show_std_marks(data):
 # Function to display and select the function
 def input_function(data):
     while True:
+        clear_screen()
         print("\nChoose option to input:")
         print("1. Number of students in a class")
         print("2. Student information: id, name, DoB")
@@ -187,6 +196,7 @@ def main():
         "marks": {}
     }
     while True:
+        clear_screen()
         print("\nWelcome to student mark management")
         print("Choose option:")
         print("1. Input function")
