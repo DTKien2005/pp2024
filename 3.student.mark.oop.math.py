@@ -1,12 +1,7 @@
 import re
-import os
-
-# Clear the terminal
-def clear_screen():
-    if os.getenv("TERM"):
-        os.system('clear')
-    else:
-        print("\n" * 50)
+import math
+import numpy as np
+import curses
 
 # Class Student
 class Student:
@@ -17,9 +12,10 @@ class Student:
 
 # Class Course
 class Course:
-    def __init__(self, course_id,name):
+    def __init__(self, course_id,name,course_credit):
         self.id = course_id
         self.name = name
+        self.credit = course_credit
 
 # Class StudentManagement
 class StdManagement:
@@ -29,6 +25,7 @@ class StdManagement:
         self.num_courses = 0
         self.course = []
         self.marks = {}
+        self.gpa = {}
 
     # Function to input the number of students
     def input_num_of_std(self):
@@ -99,7 +96,8 @@ class StdManagement:
                 else:
                     break
             course_name = input("Enter course name: ")
-            self.course.append(Course(course_id, course_name))
+            course_credit = int(input("Enter course credits: "))
+            self.course.append(Course(course_id, course_name, course_credit))
         print("Course information successfully recorded.")
 
     # Function to input marks
@@ -122,7 +120,7 @@ class StdManagement:
                 try:
                     mark = float(input(f"Enter marks for {student.name} (ID: {student.id}): "))
                     if 0 <= mark <= 20:
-                        self.marks[course_id][student.id] = mark
+                        self.marks[course_id][student.id] = math.floor(mark)
                         break
                     else:
                         print("Please enter a mark between 0 and 20.")
@@ -182,7 +180,6 @@ class StdManagement:
     # Function to display and select the function
     def input_function(self):
         while True:
-            clear_screen()
             print("\nChoose option to input:")
             print("1. Number of students in a class")
             print("2. Student information: id, name, DoB")
@@ -213,14 +210,14 @@ class StdManagement:
 
     def main(self):
         while True:
-            clear_screen()
             print("\nWelcome to student mark management")
             print("Choose option:")
             print("1. Input function")
             print("2. List courses")
             print("3. List students")
             print("4. Show student marks")
-            print("5. Exit")
+            print("5. List student by GPA descending")
+            print("6. Exit")
 
             choice = input("Enter your choice: ")
 
@@ -239,6 +236,8 @@ class StdManagement:
             elif choice == 4:
                 self.show_std_marks()
             elif choice == 5:
+                print("Student gpa list")
+            elif choice == 6:
                 print("Exiting the program.")
                 break
             else:
