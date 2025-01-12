@@ -128,6 +128,40 @@ class StdManagement:
                     print("Invalid input. Please enter a valid number.")
         print("Marks successfully recorded.")
 
+    # Function to calculate gpa
+    def cal_gpa(self):
+        print("\nCalculating GPA for all students...")
+        for student in self.student:
+            credit = []
+            marks = []
+            for course in self.course:
+                if student.id in self.marks.get(course.id, {}):
+                    credit.append(course.credit)
+                    marks.append(self.marks[course.id][student.id])
+                if credit and marks:
+                    credits_array = np.array(credit)
+                    marks_array = np.array(marks)
+                    weight_sum = np.sum(credits_array * marks_array)
+                    total_credits = np.sum(credits_array)
+                    gpa = weight_sum / total_credits
+                    self.gpa[student.id] = gpa
+                else:
+                    self.gpa[student.id] = 0
+                    print(f"{student.id:}{student.name}No GPA")
+        print("GPA calculation complete.\n")
+
+    # Function to sort desc GPA
+    def sort_by_gpa_desc(self):
+        self.cal_gpa()
+        student_gpa = np.array([self.gpa.get(student.id, 0) for student in self.student])
+        sorted_gpa = np.argsort(-student_gpa)
+        print("\nStudents sorted by GPA (descending): ")
+        for idx in sorted_gpa:
+            student = self.student[idx]
+            gpa = self.gpa.get(student.id, "No GPA")
+            print(f"ID: {student.id}, Name: {student.name}, GPA: {gpa}")
+        return [self.student[idx] for idx in sorted_gpa]
+
     # Function to list all students
     def list_students(self):
         if not self.student:
@@ -236,7 +270,7 @@ class StdManagement:
             elif choice == 4:
                 self.show_std_marks()
             elif choice == 5:
-                print("Student gpa list")
+                self.sort_by_gpa_desc()
             elif choice == 6:
                 print("Exiting the program.")
                 break
