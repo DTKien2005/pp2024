@@ -1,12 +1,4 @@
 import re
-import os
-
-# Clear the terminal
-def clear_screen():
-    if os.getenv("TERM"):
-        os.system('clear')
-    else:
-        print("\n" * 50)
 
 # Class Student
 class Student:
@@ -48,7 +40,6 @@ class StdManagement:
         if self.num_students <= 0:
             print("Please input the number of students first.")
             return
-
         for _ in range(self.num_students):
             while True:
                 student_id = input("Enter student ID: ")
@@ -56,14 +47,12 @@ class StdManagement:
                     print("Student ID already exists. Please enter a unique ID.")
                 else:
                     break
-
             while True:
                 student_name = input("Enter student name: ")
                 if re.match(r"^[A-Za-z\s]+$", student_name):
                     break
                 else:
                     print("Invalid name. Please use letters only (no numbers or special characters).")
-
             while True:
                 student_dob = input("Enter student date of birth (DD/MM/YYYY) (Example: 01/01/1111): ")
                 if re.match(r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\d{4})$", student_dob):
@@ -182,7 +171,6 @@ class StdManagement:
     # Function to display and select the function
     def input_function(self):
         while True:
-            clear_screen()
             print("\nChoose option to input:")
             print("1. Number of students in a class")
             print("2. Student information: id, name, DoB")
@@ -213,7 +201,6 @@ class StdManagement:
 
     def main(self):
         while True:
-            clear_screen()
             print("\nWelcome to student mark management")
             print("Choose option:")
             print("1. Input function")
@@ -223,13 +210,10 @@ class StdManagement:
             print("5. Exit")
 
             choice = input("Enter your choice: ")
-
             if not choice.isdigit():
                 print("Invalid input. Please enter a number between 1 and 5.")
                 continue
-
             choice = int(choice)
-
             if choice == 1:
                 self.input_function()
             elif choice == 2:
