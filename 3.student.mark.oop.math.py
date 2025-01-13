@@ -27,110 +27,248 @@ class StdManagement:
         self.marks = {}
         self.gpa = {}
 
-    # Function to input the number of students
-    def input_num_of_std(self):
+    def display_menu(self, window, prompt, options):
         while True:
+            window.clear()
+            window.addstr(f"{prompt}\n\n")
+            for i, option in enumerate(options, 1):
+                window.addstr(f"{i}. {option}\n")
+            window.addstr("\nEnter your choice: ")
+            window.refresh()
+
             try:
-                num_students = int(input("Enter the number of students: "))
-                if num_students > 0:
-                    self.num_students = num_students
-                    break
+                curses.echo()
+                choice = int(window.getstr().decode())
+                curses.noecho()
+                if 1 <= choice <= len(options):
+                    return choice
                 else:
-                    print("Please enter a positive number.")
+                    window.addstr("\nInvalid choice. Press any key to try again.")
+                    window.getch()
             except ValueError:
-                print("Invalid input. Please enter an integer.")
+                window.addstr("\nInvalid input. Please enter a valid number. Press any key to try again.")
+                window.getch()
+
+    # Input a positive integer
+    def input_positive_int(self, window, prompt):
+        while True:
+            window.clear()
+            window.addstr(prompt)
+            window.refresh()
+            try:
+                curses.echo()
+                user_input = int(window.getstr().decode())
+                curses.noecho()
+                if user_input > 0:
+                    return user_input
+                else:
+                    window.addstr("\nPlease enter a positive number. Press any key to retry.")
+                    window.getch()
+            except ValueError:
+                window.addstr("\nInvalid input. Please enter an integer. Press any key to retry.")
+                window.getch()
+
+    # Input text with validation
+    def input_text(self, window, prompt, validation=None):
+        while True:
+            window.clear()
+            window.addstr(prompt)
+            window.refresh()
+            curses.echo()
+            user_input = window.getstr().decode().strip()
+            curses.noecho()
+            if not validation or validation(user_input):
+                return user_input
+            window.addstr("\nInvalid input. Press any key to retry.")
+            window.getch()
 
     # Function to input student information
-    def input_std_info(self):
+    def input_std_info(self, window):
+        # Check if the number of students is set and greater than 0
         if self.num_students <= 0:
-            print("Please input the number of students first.")
+            window.clear()
+            window.addstr("Please input the number of students first.\n")
+            window.addstr("Press any key to return to the previous menu.")
+            window.refresh()
+            window.getch()
             return
 
         for _ in range(self.num_students):
             while True:
-                student_id = input("Enter student ID: ")
-                if any(student.id == student_id for student in self.student):
-                    print("Student ID already exists. Please enter a unique ID.")
-                else:
-                    break
+                window.clear()
+                window.addstr("Enter student information\n")
+                window.addstr(f"Number of students left to input: {self.num_students - len(self.student)}\n\n")
 
-            while True:
-                student_name = input("Enter student name: ")
-                if re.match(r"^[A-Za-z\s]+$", student_name):
-                    break
-                else:
-                    print("Invalid name. Please use letters only (no numbers or special characters).")
+                # Input Student ID
+                while True:
+                    window.addstr("Enter student ID: ")
+                    window.refresh()
+                    curses.echo()
+                    student_id = window.getstr().decode().strip()
+                    curses.noecho()
+                    if any(s.id == student_id for s in self.student):
+                        window.addstr("\nStudent ID already exists. Please try again.\n")
+                    else:
+                        break
+                    window.getch()
+                    window.clear()
+                    window.addstr("Enter student information\n")
 
-            while True:
-                student_dob = input("Enter student date of birth (DD/MM/YYYY) (Example: 01/01/1111): ")
-                if re.match(r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\d{4})$", student_dob):
-                    break
-                else:
-                    print("Invalid date format. Please use DD/MM/YYYY.")
-            self.student.append(Student(student_id, student_name, student_dob))
-        print("Student information successfully recorded.")
+                # Input Student Name
+                while True:
+                    window.addstr("Enter student name: ")
+                    window.refresh()
+                    curses.echo()
+                    student_name = window.getstr().decode().strip()
+                    curses.noecho()
+                    if not re.match(r"^[A-Za-z\s]+$", student_name):
+                        window.addstr("\nInvalid name. Use only letters and spaces. Please try again.\n")
+                    else:
+                        break
+                    window.getch()
 
-    # Function to input the number of courses
-    def input_num_of_courses(self):
-        while True:
-            try:
-                num_courses = int(input("Enter the number of courses: "))
-                if num_courses > 0:
-                    self.num_courses = num_courses
-                    break
-                else:
-                    print("Please enter a positive number.")
-            except ValueError:
-                print("Invalid input. Please enter an integer.")
+                # Input Student Date of Birth
+                while True:
+                    window.addstr("Enter student date of birth (DD/MM/YYYY): ")
+                    window.refresh()
+                    curses.echo()
+                    student_dob = window.getstr().decode().strip()
+                    curses.noecho()
+                    if not re.match(r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\d{4})$", student_dob):
+                        window.addstr("\nInvalid date format. Use DD/MM/YYYY. Please try again.\n")
+                    else:
+                        break
+                    window.getch()
+                # Add student to the list if all inputs are valid
+                self.student.append(Student(student_id, student_name, student_dob))
+                break
+        window.addstr("\nAll student information successfully recorded. Press any key to continue.")
+        window.refresh()
+        window.getch()
 
     # Function to input course information
-    def input_course_info(self):
+    def input_course_info(self, window):
         if self.num_courses <= 0:
-            print("Please input the number of courses first.")
+            window.clear()
+            window.addstr("Please input the number of courses first.\n")
+            window.addstr("Press any key to return to the previous menu.\n")
+            window.getch()
             return
         for _ in range(self.num_courses):
             while True:
-                course_id = input("Enter course ID: ")
-                if any(course.id == course_id for course in self.course):
-                    print("Course ID already exists. Please enter a unique ID.")
-                else:
-                    break
-            course_name = input("Enter course name: ")
-            course_credit = int(input("Enter course credits: "))
-            self.course.append(Course(course_id, course_name, course_credit))
-        print("Course information successfully recorded.")
+                window.clear()
+                window.addstr("Enter course information\n")
+                window.addstr(f"Number of course left to input: {self.num_courses - len(self.course)}\n\n")
+                while True:
+                    window.addstr("Enter course ID: ")
+                    window.refresh()
+                    curses.echo()
+                    course_id = window.getstr().decode().strip()
+                    curses.noecho()
+                    if any(course.id == course_id for course in self.course):
+                        print("Course ID already exists. Please enter a unique ID.\n")
+                    else:
+                        break
+                while True:
+                    window.addstr("Enter course name: ")
+                    window.refresh()
+                    curses.echo()
+                    course_name = window.getstr().decode().strip()
+                    curses.noecho()
+                    if course_name == "":
+                        window.addstr("\nCourse name cannot be empty. Please try again.\n")
+                        window.getch()
+                    else:
+                        break
+                while True:
+                    window.addstr("Enter course credits (integer): ")
+                    window.refresh()
+                    curses.echo()
+                    try:
+                        course_credit = int(window.getstr().decode().strip())
+                        curses.noecho()
+                        if course_credit <= 0:
+                            window.addstr("\nCredits must be a positive integer. Please try again.\n")
+                            window.getch()
+                        else:
+                            break
+                    except ValueError:
+                        curses.noecho()
+                        window.addstr("\nInvalid input. Please enter a valid integer for credits.\n")
+                        window.getch()
+                self.course.append(Course(course_id, course_name, course_credit))
+                break
+        window.addstr("\nAll course information successfully recorded. Press any key to continue.")
+        window.refresh()
+        window.getch()
+
+    # Function to list all students
+    def list_students(self, window):
+        window.clear()
+        if not self.student:
+            window.addstr("No students available.")
+        else:
+            window.addstr("Students:\n")
+            for student in self.student:
+                window.addstr(f"ID: {student.id}, Name: {student.name}, DOB: {student.dob}\n")
+        window.addstr("\nPress any key to return.")
+        window.getch()
+
+    def list_id(self, window):
+        window.clear()
+        if not self.student:
+            window.addstr("No students available.")
+        else:
+            window.addstr("Students:\n")
+            for student in self.student:
+                window.addstr(f"ID: {student.id}, Name: {student.name} \n")
+        window.addstr("\nPress any key to return.")
+        window.getch()
+
+    # Function to display course
+    def list_courses(self, window):
+        window.clear()
+        if not self.course:
+            window.addstr("No courses available.")
+        else:
+            window.addstr("Courses:\n")
+            for course in self.course:
+                window.addstr(f"Course ID: {course.id}, Course Name: {course.name}\n")
+        window.addstr("\nPress any key to return.")
+        window.getch()
 
     # Function to input marks
-    def input_course_marks(self):
+    def input_course_marks(self, window):
+        window.clear()
         if not self.course:
-            print("No courses available. Please input course information first.")
+            window.addstr("No courses available. Press any key to return.")
+            window.getch()
             return
         if not self.student:
-            print("No students available. Please input student information first.")
+            window.clear()
+            window.addstr("No student available. Press any key to return.")
+            window.getch()
             return
-        self.list_courses()
-        course_id = input("Enter the course ID to input marks: ")
+        self.list_courses(window)
+        course_id = self.input_text(window,"Enter the course ID to input marks: ")
         course = next((c for c in self.course if c.id == course_id), None)
         if not course:
-            print("Invalid course ID.")
+            window.addstr("\nInvalid course ID. Press any key to return.")
+            window.getch()
+            return
+        # Initialize marks for the course if not already present
         if course_id not in self.marks:
             self.marks[course_id] = {}
+        # Input marks for each student
         for student in self.student:
-            while True:
-                try:
-                    mark = float(input(f"Enter marks for {student.name} (ID: {student.id}): "))
-                    if 0 <= mark <= 20:
-                        self.marks[course_id][student.id] = math.floor(mark)
-                        break
-                    else:
-                        print("Please enter a mark between 0 and 20.")
-                except ValueError:
-                    print("Invalid input. Please enter a valid number.")
-        print("Marks successfully recorded.")
+            mark = self.input_positive_int(window, f"Enter marks for {student.name} (ID: {student.id}): ")
+            self.marks[course_id][student.id] = math.floor(mark)
+        window.addstr("\nMarks successfully recorded. Press any key to continue.")
+        window.getch()
 
     # Function to calculate gpa
-    def cal_gpa(self):
-        print("\nCalculating GPA for all students...")
+    def cal_gpa(self, window):
+        window.addstr("\nCalculating GPA for all students...\n")
         for student in self.student:
             credit = []
             marks = []
@@ -147,130 +285,105 @@ class StdManagement:
                     self.gpa[student.id] = gpa
                 else:
                     self.gpa[student.id] = 0
-                    print(f"{student.id:}{student.name}No GPA")
-        print("GPA calculation complete.\n")
+                    window.addstr(f"{student.id:}{student.name}No GPA")
+        window.addstr("GPA calculation complete.\n")
 
     # Function to sort desc GPA
-    def sort_by_gpa_desc(self):
-        self.cal_gpa()
+    def sort_by_gpa_desc(self, window):
+        window.clear()
+        self.cal_gpa(window)
         student_gpa = np.array([self.gpa.get(student.id, 0) for student in self.student])
         sorted_gpa = np.argsort(-student_gpa)
-        print("\nStudents sorted by GPA (descending): ")
+        window.addstr("\nStudents sorted by GPA (descending): \n")
         for idx in sorted_gpa:
             student = self.student[idx]
             gpa = self.gpa.get(student.id, "No GPA")
-            print(f"ID: {student.id}, Name: {student.name}, GPA: {gpa}")
+            window.addstr(f"ID: {student.id}, Name: {student.name}, GPA: {gpa}\n")
+        window.addstr("\nSorting completed. Press any key to return.")
+        window.getch()
         return [self.student[idx] for idx in sorted_gpa]
 
-    # Function to list all students
-    def list_students(self):
-        if not self.student:
-            print("No students available.")
-        else:
-            print("\nStudents:")
-            for student in self.student:
-                print(f"ID: {student.id}, Name: {student.name}, DOB: {student.dob}")
-
-    # Function to list all name student and student id
-    def list_id(self):
-        if not self.student:
-            print("No students available.")
-        else:
-            print("\nStudents:")
-            for student in self.student:
-                print(f"ID: {student.id}, Name: {student.name}")
-
-    # Function to display course
-    def list_courses(self):
-        if not self.course:
-            print("No courses available.")
-        else:
-            print("\nCourses: ")
-            for course in self.course:
-                print(f"Course ID: {course.id}, Course Name: {course.name}")
-
     # Function to show a student marks
-    def show_std_marks(self):
+    def show_std_marks(self, window):
+        window.clear()
         if not self.marks:
-            print("No marks recorded.")
+            window.addstr("No marks recorded. Press any key to return.")
+            window.getch()
             return
-        self.list_id()
-        student_id = input("Enter student ID to view mark: ")
+        self.list_id(window)
+        student_id = self.input_text(window, "Enter student ID to view mark: ")
         student = next((s for s in self.student if s.id == student_id), None)
         if not student:
-            print("Invalid student ID.")
+            window.addstr("Invalid student ID. Press any key to return.")
+            window.getch()
             return
-        print(f"\nMarks for Student: {student.name} (ID: {student.id})")
+        window.addstr(f"\nMarks for Student: {student.name} (ID: {student.id})\n")
         found_marks = False
         for course_id, course_marks in self.marks.items():
             if student_id in course_marks:
                 course = next((c for c in self.course if c.id == course_id), None)
                 if course:
                     found_marks = True
-                    print(f"Course: {course.name} - Mark: {course_marks[student_id]}")
+                    window.addstr(f"Course: {course.name} - Mark: {course_marks[student_id]}\n")
         if not found_marks:
-            print("No marks recorded for this student.")
+            window.addstr("No marks recorded for this student.\n")
+        window.addstr("\nPress any key to return.")
+        window.getch()
 
     # Function to display and select the function
-    def input_function(self):
+    def input_function(self, window):
+        curses.curs_set(0)
         while True:
-            print("\nChoose option to input:")
-            print("1. Number of students in a class")
-            print("2. Student information: id, name, DoB")
-            print("3. Number of courses")
-            print("4. Course information: id, name")
-            print("5. Select a course, input marks for student")
-            print("6. Return to main menu")
+            input_options = [
+                "Number of students in a class",
+                "Student information: id, name, DoB",
+                "Number of courses",
+                "Course information: id, name",
+                "Select a course, input marks for students",
+                "Return to main menu"
+            ]
 
-            option = input("Enter your option: ")
-            if not option.isdigit():
-                print("Invalid input. Please enter a number between 1 and 6.")
-                continue
-            if option == "1":
-                self.input_num_of_std()
-            elif option == "2":
-                self.input_std_info()
-            elif option == "3":
-                self.input_num_of_courses()
-            elif option == "4":
-                self.input_course_info()
-            elif option == "5":
-                self.input_course_marks()
-            elif option == "6":
-                print("Returning to main menu...")
+            option = self.display_menu(window, "Input Menu", input_options)
+            if option == 1:
+                self.num_students = self.input_positive_int(window, "Enter the number of students: ")
+            elif option == 2:
+                self.input_std_info(window)
+            elif option == 3:
+                self.num_courses = self.input_positive_int(window, "Enter the number of courses: ")
+            elif option == 4:
+                self.input_course_info(window)
+            elif option == 5:
+                self.input_course_marks(window)
+            elif option == 6:
+                window.addstr("To return to main menu press key.")
+                window.getch()
                 break
             else:
-                print("Invalid option. Please enter a number between 1 and 6.")
+                window.addstr("Invalid option. Please enter a number between 1 and 6.")
+                window.getch()
 
-    def main(self):
+    def main(self, window):
+        curses.curs_set(0)
         while True:
-            print("\nWelcome to student mark management")
-            print("Choose option:")
-            print("1. Input function")
-            print("2. List courses")
-            print("3. List students")
-            print("4. Show student marks")
-            print("5. List student by GPA descending")
-            print("6. Exit")
-
-            choice = input("Enter your choice: ")
-
-            if not choice.isdigit():
-                print("Invalid input. Please enter a number between 1 and 5.")
-                continue
-
-            choice = int(choice)
-
+            options = [
+                "Input function",
+                "List courses",
+                "List students",
+                "Show student marks",
+                "List students by GPA descending",
+                "Exit"
+            ]
+            choice = self.display_menu(window, "Main Menu", options)
             if choice == 1:
-                self.input_function()
+                self.input_function(window)
             elif choice == 2:
-                self.list_courses()
+                self.list_courses(window)
             elif choice == 3:
-                self.list_students()
+                self.list_students(window)
             elif choice == 4:
-                self.show_std_marks()
+                self.show_std_marks(window)
             elif choice == 5:
-                self.sort_by_gpa_desc()
+                self.sort_by_gpa_desc(window)
             elif choice == 6:
                 print("Exiting the program.")
                 break
@@ -280,4 +393,4 @@ class StdManagement:
 # Call the main function to start the program
 if __name__ == "__main__":
     sms = StdManagement()
-    sms.main()
+    curses.wrapper(sms.main)
