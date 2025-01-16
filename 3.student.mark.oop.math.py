@@ -345,7 +345,7 @@ class StdManagement:
                 "Number of students in a class",
                 "Student information: id, name, DoB",
                 "Number of courses",
-                "Course information: id, name",
+                "Course information: id, name, credits",
                 "Select a course, input marks for students",
                 "Return to main menu"
             ]
