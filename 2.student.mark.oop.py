@@ -1,29 +1,30 @@
 import re
 
-# Class Student
-class Student:
+# Class StudentInfo (for encapsulating student data)
+class StudentInfo:
     def __init__(self, student_id, name, dob):
         self.id = student_id
         self.name = name
         self.dob = dob
 
-# Class Course
-class Course:
-    def __init__(self, course_id,name):
+# Class CourseInfo (for encapsulating course data)
+class CourseInfo:
+    def __init__(self, course_id, course_name):
         self.id = course_id
-        self.name = name
+        self.name = course_name
 
-# Class StudentManagement
-class StdManagement:
+# Class Student
+class Student:
     def __init__(self):
         self.num_students = 0
         self.student = []
-        self.num_courses = 0
-        self.course = []
-        self.marks = {}
 
     # Function to input the number of students
-    def input_num_of_std(self):
+    def input(self):
+        if self.num_students > 0:
+            change = input("You have already input the number of students. Do you want to change it? (y/n): ")
+            if change.lower() != 'y':
+                return
         while True:
             try:
                 num_students = int(input("Enter the number of students: "))
@@ -42,28 +43,55 @@ class StdManagement:
             return
         for _ in range(self.num_students):
             while True:
-                student_id = input("Enter student ID: ")
-                if any(student.id == student_id for student in self.student):
-                    print("Student ID already exists. Please enter a unique ID.")
-                else:
+                print("Enter student information\n")
+                print(f"Number of students left to input: {self.num_students - len(self.student)}\n")
+                if self.num_students - len(self.student) == 0:
                     break
-            while True:
-                student_name = input("Enter student name: ")
-                if re.match(r"^[A-Za-z\s]+$", student_name):
-                    break
-                else:
-                    print("Invalid name. Please use letters only (no numbers or special characters).")
-            while True:
-                student_dob = input("Enter student date of birth (DD/MM/YYYY) (Example: 01/01/1111): ")
-                if re.match(r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\d{4})$", student_dob):
-                    break
-                else:
-                    print("Invalid date format. Please use DD/MM/YYYY.")
-            self.student.append(Student(student_id, student_name, student_dob))
+                while True:
+                    student_id = input("Enter student ID: ")
+                    if any(student.id == student_id for student in self.student):
+                        print("Student ID already exists. Please enter a unique ID.")
+                    else:
+                        break
+                while True:
+                    student_name = input("Enter student name: ")
+                    if re.match(r"^[A-Za-z\s]+$", student_name):
+                        break
+                    else:
+                        print("Invalid name. Please use letters only (no numbers or special characters).")
+                while True:
+                    student_dob = input("Enter student date of birth (DD/MM/YYYY) (Example: 01/01/1111): ")
+                    if re.match(r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\d{4})$", student_dob):
+                        break
+                    else:
+                        print("Invalid date format. Please use DD/MM/YYYY.")
+                self.student.append(StudentInfo(student_id, student_name, student_dob))
         print("Student information successfully recorded.")
 
+    # Function to list all students
+    def list(self):
+        if not self.student:
+            print("No students available.")
+        else:
+            print("\nStudents:")
+            for student in self.student:
+                print(f"ID: {student.id}, Name: {student.name}, DOB: {student.dob}")
+
+
+# Class Course
+class Course(Student):
+    def __init__(self):
+        super().__init__()
+        self.num_courses = 0
+        self.course = []
+        self.marks = {}
+
     # Function to input the number of courses
-    def input_num_of_courses(self):
+    def input(self):
+        if self.num_courses > 0:
+            change = input("You have already input the number of courses. Do you want to change it? (y/n): ")
+            if change.lower() != 'y':
+                return
         while True:
             try:
                 num_courses = int(input("Enter the number of courses: "))
@@ -88,7 +116,7 @@ class StdManagement:
                 else:
                     break
             course_name = input("Enter course name: ")
-            self.course.append(Course(course_id, course_name))
+            self.course.append(CourseInfo(course_id, course_name))
         print("Course information successfully recorded.")
 
     # Function to input marks
@@ -99,7 +127,9 @@ class StdManagement:
         if not self.student:
             print("No students available. Please input student information first.")
             return
-        self.list_courses()
+        print("\nCourses: ")
+        for course in self.course:
+            print(f"Course ID: {course.id}, Course Name: {course.name}")
         course_id = input("Enter the course ID to input marks: ")
         course = next((c for c in self.course if c.id == course_id), None)
         if not course:
@@ -119,26 +149,8 @@ class StdManagement:
                     print("Invalid input. Please enter a valid number.")
         print("Marks successfully recorded.")
 
-    # Function to list all students
-    def list_students(self):
-        if not self.student:
-            print("No students available.")
-        else:
-            print("\nStudents:")
-            for student in self.student:
-                print(f"ID: {student.id}, Name: {student.name}, DOB: {student.dob}")
-
-    # Function to list all name student and student id
-    def list_id(self):
-        if not self.student:
-            print("No students available.")
-        else:
-            print("\nStudents:")
-            for student in self.student:
-                print(f"ID: {student.id}, Name: {student.name}")
-
     # Function to display course
-    def list_courses(self):
+    def list(self):
         if not self.course:
             print("No courses available.")
         else:
@@ -151,7 +163,13 @@ class StdManagement:
         if not self.marks:
             print("No marks recorded.")
             return
-        self.list_id()
+        if not self.student:
+            print("No students available.")
+            return
+        else:
+            print("\nStudents:")
+            for student in self.student:
+                print(f"ID: {student.id}, Name: {student.name}")
         student_id = input("Enter student ID to view mark: ")
         student = next((s for s in self.student if s.id == student_id), None)
         if not student:
@@ -168,6 +186,10 @@ class StdManagement:
         if not found_marks:
             print("No marks recorded for this student.")
 
+# Class StudentManagement
+class StdManagement(Course):
+    def __init__(self):
+        super().__init__()
     # Function to display and select the function
     def input_function(self):
         while True:
@@ -184,15 +206,15 @@ class StdManagement:
                 print("Invalid input. Please enter a number between 1 and 6.")
                 continue
             if option == "1":
-                self.input_num_of_std()
+                Student.input(self)
             elif option == "2":
-                self.input_std_info()
+                Student.input_std_info(self)
             elif option == "3":
-                self.input_num_of_courses()
+                Course.input(self)
             elif option == "4":
-                self.input_course_info()
+                Course.input_course_info(self)
             elif option == "5":
-                self.input_course_marks()
+                Course.input_course_marks(self)
             elif option == "6":
                 print("Returning to main menu...")
                 break
@@ -217,11 +239,11 @@ class StdManagement:
             if choice == 1:
                 self.input_function()
             elif choice == 2:
-                self.list_courses()
+                Course.list(self)
             elif choice == 3:
-                self.list_students()
+                Student.list(self)
             elif choice == 4:
-                self.show_std_marks()
+                Course.show_std_marks(self)
             elif choice == 5:
                 print("Exiting the program.")
                 break
