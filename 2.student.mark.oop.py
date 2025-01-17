@@ -20,7 +20,7 @@ class Student:
         self.student = []
 
     # Function to input the number of students
-    def input(self):
+    def input_num(self):
         if self.num_students > 0:
             change = input("You have already input the number of students. Do you want to change it? (y/n): ")
             if change.lower() != 'y':
@@ -87,7 +87,7 @@ class Course(Student):
         self.marks = {}
 
     # Function to input the number of courses
-    def input(self):
+    def input_num(self):
         if self.num_courses > 0:
             change = input("You have already input the number of courses. Do you want to change it? (y/n): ")
             if change.lower() != 'y':
@@ -190,6 +190,7 @@ class Course(Student):
 class StdManagement(Course):
     def __init__(self):
         super().__init__()
+
     # Function to display and select the function
     def input_function(self):
         while True:
@@ -206,11 +207,11 @@ class StdManagement(Course):
                 print("Invalid input. Please enter a number between 1 and 6.")
                 continue
             if option == "1":
-                Student.input(self)
+                Student.input_num(self)
             elif option == "2":
                 Student.input_std_info(self)
             elif option == "3":
-                Course.input(self)
+                Course.input_num(self)
             elif option == "4":
                 Course.input_course_info(self)
             elif option == "5":
