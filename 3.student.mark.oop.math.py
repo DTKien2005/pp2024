@@ -3,14 +3,14 @@ import math
 import numpy as np
 import curses
 
-# Class Student
+# Class StudentInfo (for encapsulating student data)
 class StudentInfo:
     def __init__(self, student_id, name, dob):
         self.id = student_id
         self.name = name
         self.dob = dob
 
-# Class Course
+# Class CourseInfo (for encapsulating course data)
 class CourseInfo:
     def __init__(self, course_id,name,course_credit):
         self.id = course_id
