@@ -1,11 +1,58 @@
 import curses
+import os
+import zipfile
+from domains.StudentInfo import StudentInfo
+from domains.CourseInfo import CourseInfo
 from input import Student, Course
 from output import display_menu, list_courses, list_std, show_std_marks, cal_gpa, sort_by_gpa_desc
+
+def compress_file(output_file="students.dat"):
+    files_to_compress = ["student.txt", "course.txt", "marks.txt"]
+    with zipfile.ZipFile(output_file, "w") as z:
+        for file in files_to_compress:
+            if os.path.exists(file):
+                z.write(file, arcname=os.path.basename(file))
+    print("Files compressed successfully into students.dat.")
+
+def decompress_file(input_file="students.dat"):
+    if not os.path.exists(input_file):
+        print(f"{input_file} not found. Starting with empty data.")
+        return None, None, None
+
+    # Extract the ZIP file
+    with zipfile.ZipFile(input_file, "r") as z:
+        z.extractall()  # This will extract all files in the current directory
+        print("Files decompressed successfully.")
 
 # Class StudentManagement
 class StdManagement(Course):
     def __init__(self):
         super().__init__()
+        decompress_file()  # Load data from students.dat
+        # Ensure the in-memory data matches the decompressed files
+        if os.path.exists("students.txt"):
+            with open("students.txt", "r") as f:
+                for line in f:
+                    student_id, name, dob = line.strip().split(",")
+                    self.student.append(StudentInfo(student_id, name, dob))
+
+        if os.path.exists("courses.txt"):
+            with open("courses.txt", "r") as f:
+                for line in f:
+                    course_id, name, credit = line.strip().split(",")
+                    self.course.append(CourseInfo(course_id, name, int(credit)))
+
+        if os.path.exists("marks.txt"):
+            with open("marks.txt", "r") as f:
+                current_course = None
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("Course ID:"):
+                        current_course = line.split(":")[1].strip()
+                        self.marks[current_course] = {}
+                    elif ":" in line:
+                        student_id, mark = line.split(":")
+                        self.marks[current_course][student_id.strip()] = int(mark.strip())
 
     # Function to display and select the function
     def input_function(self, window):
@@ -63,6 +110,7 @@ class StdManagement(Course):
                 cal_gpa(self, window)
                 sort_by_gpa_desc(self, window)
             elif choice == 6:
+                compress_file()
                 print("Exiting the program.")
                 break
             else:

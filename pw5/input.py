@@ -1,6 +1,7 @@
 import re
 import curses
 import math
+import os
 from domains.StudentInfo import StudentInfo
 from domains.CourseInfo import CourseInfo
 
@@ -103,6 +104,16 @@ class Student:
                 # Add student to the list if all inputs are valid
                 self.student.append(StudentInfo(student_id, student_name, student_dob))
                 break
+        # Save students to a file
+        file_name = "students.txt"
+        if os.path.exists(file_name):
+            window.addstr(f"\n{file_name} already exists. Overwriting...")
+        else:
+            window.addstr(f"\n{file_name} does not exist. Creating a new file...")
+        with open(file_name, "w") as f:
+            for s in self.student:
+                f.write(f"{s.id},{s.name},{s.dob}\n")
+        window.addstr("\nStudent information saved successfully.")
         window.addstr("\nAll student information successfully recorded. Press any key to continue.")
         window.refresh()
         window.getch()
@@ -201,6 +212,16 @@ class Course(Student):
                         window.getch()
                 self.course.append(CourseInfo(course_id, course_name, course_credit))
                 break
+        # Save courses to a file
+        file_name = "courses.txt"
+        if os.path.exists(file_name):
+            window.addstr(f"\n{file_name} already exists. Overwriting...")
+        else:
+            window.addstr(f"\n{file_name} does not exist. Creating a new file...")
+        with open(file_name, "w") as f:
+            for s in self.course:
+                f.write(f"{s.id},{s.name},{s.credit}\n")
+        window.addstr("\nCourses information saved successfully.")
         window.addstr("\nAll course information successfully recorded. Press any key to continue.")
         window.refresh()
         window.getch()
@@ -253,5 +274,18 @@ class Course(Student):
                     else:
                         window.addstr("Invalid input. Please enter an integer number between 20 and 0.\n")
                         window.refresh()
-            window.addstr("\nMarks successfully recorded. Press any key to continue.")
+
+            # Write marks to marks.txt
+            file_name = "marks.txt"
+            if not os.path.exists(file_name):
+                window.addstr(f"\n{file_name} does not exist. A new file will be created.")
+            with open("marks.txt", "w") as f:
+                for course_id, student_marks in self.marks.items():
+                    f.write(f"Course ID: {course_id}\n")
+                    for student_id, mark in student_marks.items():
+                        f.write(f"{student_id}: {mark}\n")
+                    f.write("\n")
+
+            window.addstr("\nMarks successfully recorded and saved to marks.txt. Press any key to continue.")
+            window.refresh()
             window.getch()
