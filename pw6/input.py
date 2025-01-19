@@ -1,6 +1,7 @@
 import re
 import curses
 import math
+import pickle
 import os
 from domains.StudentInfo import StudentInfo
 from domains.CourseInfo import CourseInfo
@@ -105,14 +106,13 @@ class Student:
                 self.student.append(StudentInfo(student_id, student_name, student_dob))
                 break
         # Save students to a file
-        file_name = "students.txt"
+        file_name = "students.pkl"
         if os.path.exists(file_name):
             window.addstr(f"\n{file_name} already exists. Overwriting...")
         else:
             window.addstr(f"\n{file_name} does not exist. Creating a new file...")
-        with open(file_name, "w") as f:
-            for s in self.student:
-                f.write(f"{s.id},{s.name},{s.dob}\n")
+        with open(file_name, "wb") as f:
+            pickle.dump(self.student, f)
         window.addstr("\nStudent information saved successfully.")
         window.addstr("\nAll student information successfully recorded. Press any key to continue.")
         window.refresh()
@@ -212,15 +212,15 @@ class Course(Student):
                         window.getch()
                 self.course.append(CourseInfo(course_id, course_name, course_credit))
                 break
+
         # Save courses to a file
-        file_name = "courses.txt"
+        file_name = "courses.pkl"
         if os.path.exists(file_name):
             window.addstr(f"\n{file_name} already exists. Overwriting...")
         else:
             window.addstr(f"\n{file_name} does not exist. Creating a new file...")
-        with open(file_name, "w") as f:
-            for s in self.course:
-                f.write(f"{s.id},{s.name},{s.credit}\n")
+        with open(file_name, "wb") as f:
+            pickle.dump(self.course, f)
         window.addstr("\nCourses information saved successfully.")
         window.addstr("\nAll course information successfully recorded. Press any key to continue.")
         window.refresh()
@@ -275,16 +275,12 @@ class Course(Student):
                         window.addstr("Invalid input. Please enter an integer number between 20 and 0.\n")
                         window.refresh()
 
-            # Write marks to marks.txt
-            file_name = "marks.txt"
+            # Write marks to marks.pkl
+            file_name = "marks.pkl"
             if not os.path.exists(file_name):
                 window.addstr(f"\n{file_name} does not exist. A new file will be created.")
-            with open("marks.txt", "w") as f:
-                for course_id, student_marks in self.marks.items():
-                    f.write(f"Course ID: {course_id}\n")
-                    for student_id, mark in student_marks.items():
-                        f.write(f"{student_id}: {mark}\n")
-                    f.write("\n")
+            with open(file_name, "wb") as f:
+                pickle.dump(self.marks, f)
 
             window.addstr("\nMarks successfully recorded and saved to marks.txt. Press any key to continue.")
             window.refresh()

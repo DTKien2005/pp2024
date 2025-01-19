@@ -1,5 +1,6 @@
 import curses
 import os
+import pickle
 import zipfile
 from domains.StudentInfo import StudentInfo
 from domains.CourseInfo import CourseInfo
@@ -7,7 +8,7 @@ from input import Student, Course
 from output import display_menu, list_courses, list_std, show_std_marks, cal_gpa, sort_by_gpa_desc
 
 def compress_file(output_file="students.dat"):
-    files_to_compress = ["student.txt", "course.txt", "marks.txt"]
+    files_to_compress = ["student.pkl", "course.pkl", "marks.pkl"]
     with zipfile.ZipFile(output_file, "w") as z:
         for file in files_to_compress:
             if os.path.exists(file):
@@ -30,29 +31,17 @@ class StdManagement(Course):
         super().__init__()
         decompress_file()  # Load data from students.dat
         # Ensure the in-memory data matches the decompressed files
-        if os.path.exists("students.txt"):
-            with open("students.txt", "r") as f:
-                for line in f:
-                    student_id, name, dob = line.strip().split(",")
-                    self.student.append(StudentInfo(student_id, name, dob))
+        if os.path.exists("students.pkl"):
+            with open("students.pkl", "rb") as f:
+                self.student = pickle.load(f)
 
-        if os.path.exists("courses.txt"):
-            with open("courses.txt", "r") as f:
-                for line in f:
-                    course_id, name, credit = line.strip().split(",")
-                    self.course.append(CourseInfo(course_id, name, int(credit)))
+        if os.path.exists("courses.pkl"):
+            with open("courses.pkl", "rb") as f:
+                self.course = pickle.load(f)
 
-        if os.path.exists("marks.txt"):
-            with open("marks.txt", "r") as f:
-                current_course = None
-                for line in f:
-                    line = line.strip()
-                    if line.startswith("Course ID:"):
-                        current_course = line.split(":")[1].strip()
-                        self.marks[current_course] = {}
-                    elif ":" in line:
-                        student_id, mark = line.split(":")
-                        self.marks[current_course][student_id.strip()] = int(mark.strip())
+        if os.path.exists("marks.pkl"):
+            with open("marks.pkl", "rb") as f:
+                self.marks = pickle.load(f)
 
     # Function to display and select the function
     def input_function(self, window):
