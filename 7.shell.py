@@ -2,14 +2,27 @@ import os
 import subprocess as sp
 
 # Function os execution
-def os_execution():
-    while True:
-        print("os function")
+def os_execution(command):
+    try:
+        result = os.system(command)
+        if result != 0:
+            print(f"Command failed with exit code {result}")
+    except Exception as e:
+        print(f"Error: {e}")
 
 # Function subprocess execution
-def subprocess_execution():
-    while True:
-        print("subprocess function")
+def subprocess_execution(command):
+    try:
+        if '|' in command:
+            process = []
+            commands = command.split('|')
+            print(commands)
+        else:
+            result = sp.run(command.split())  # This is normal case 1st
+        #error in here and fix it
+        # when run error so we need to separate 3 case
+    except Exception as e:
+        print(f"Error: {e}")
 
 # Main function
 def main():
@@ -25,9 +38,9 @@ def main():
             break
         if command:
             if select == 'os':
-                os_execution()
+                os_execution(command)
             if select == 'subprocess':
-                subprocess_execution()
+                subprocess_execution(command)
 
 if __name__ == "__main__":
     main()
