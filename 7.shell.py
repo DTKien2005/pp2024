@@ -13,14 +13,47 @@ def os_execution(command):
 # Function subprocess execution
 def subprocess_execution(command):
     try:
-        if '|' in command:
-            process = []
+        # Handle redirection and pipes
+        if '|' in command: # In this case still error when run 3 tasks must fix
+            processes = []
             commands = command.split('|')
-            print(commands)
+            for i, cmd in enumerate(commands):
+                cmd = cmd.strip().split()
+                if i == 0:
+                    p = sp.Popen(cmd, stdout=sp.PIPE)
+                else:
+                    p = sp.Popen(cmd, stdin=processes[-1].stdout, stdout=sp.PIPE)
+                processes.append(p)
+
+            outputs, errors = processes[-1].communicate()
+            if outputs:
+                print(outputs.decode())
+            if errors:
+                print(errors.decode())
+
+        # Make a file
+        elif '>' in command:
+            commands = command.split('>')
+            cmd = commands[0].strip().split()
+            outfile = commands[1].strip()
+            with open(outfile, 'w') as f:
+                sp.run(cmd, stdout=f)
+
+        # Input file
+        elif '<' in command:
+            commands = command.split('<')
+            cmd = commands[0].strip().split()
+            infile = commands[1].strip()
+            with open(infile, 'r') as f:
+                sp.run(cmd, stdin=f)
         else:
-            result = sp.run(command.split())  # This is normal case 1st
-        #error in here and fix it
-        # when run error so we need to separate 3 case
+            # Simple command execution
+            args = command.split()
+            result = sp.run(args, capture_output=True, text=True)
+            if result.stdout:
+                print(result.stdout)
+            if result.stderr:
+                print(result.stderr)
     except Exception as e:
         print(f"Error: {e}")
 
