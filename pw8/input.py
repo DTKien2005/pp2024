@@ -7,6 +7,17 @@ import threading
 from domains.StudentInfo import StudentInfo
 from domains.CourseInfo import CourseInfo
 
+# Background thread
+save_lock = threading.Lock()  # Define a global lock
+def save_data_async(data, file_name):
+    def save():
+        with save_lock:  # Ensure only one thread writes at a time
+            with open(file_name, "wb") as f:
+                pickle.dump(data, f)
+    thread = threading.Thread(target=save)
+    thread.daemon = True
+    thread.start()
+
 # Class Student
 class Student:
     def __init__(self):
@@ -285,12 +296,3 @@ class Course(Student):
             window.addstr("\nMarks successfully recorded and saved to marks.txt. Press any key to continue.")
             window.refresh()
             window.getch()
-
-# Background thread
-def save_data_async(data, file_name):
-    def save():
-        with open(file_name, "wb") as f:
-            pickle.dump(data, f)
-    thread = threading.Thread(target=save)
-    thread.daemon = True
-    thread.start()
