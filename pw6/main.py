@@ -103,7 +103,7 @@ class StdManagement(Course):
                 print("Exiting the program.")
                 break
             else:
-                print("Invalid choice. Please enter a number between 1 and 5.")
+                print("Invalid choice. Please enter a number between 1 and 6.")
 
 # Call the main function to start the program
 if __name__ == "__main__":
