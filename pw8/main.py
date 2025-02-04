@@ -2,13 +2,10 @@ import curses
 import os
 import pickle
 import zipfile
-import threading
 from domains.StudentInfo import StudentInfo
 from domains.CourseInfo import CourseInfo
 from input import Student, Course
 from output import display_menu, list_courses, list_std, show_std_marks, cal_gpa, sort_by_gpa_desc
-
-SAVE_LOCK = threading.Lock()
 
 def compress_file(output_file="students.dat"):
     files_to_compress = ["student.pkl", "course.pkl", "marks.pkl"]
@@ -106,7 +103,7 @@ class StdManagement(Course):
                 print("Exiting the program.")
                 break
             else:
-                print("Invalid choice. Please enter a number between 1 and 5.")
+                print("Invalid choice. Please enter a number between 1 and 6.")
 
 # Call the main function to start the program
 if __name__ == "__main__":

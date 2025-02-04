@@ -3,6 +3,7 @@ import curses
 import math
 import pickle
 import os
+import threading
 from domains.StudentInfo import StudentInfo
 from domains.CourseInfo import CourseInfo
 
@@ -111,8 +112,8 @@ class Student:
             window.addstr(f"\n{file_name} already exists. Overwriting...")
         else:
             window.addstr(f"\n{file_name} does not exist. Creating a new file...")
-        with open(file_name, "wb") as f:
-            pickle.dump(self.student, f)
+        save_data_async(self.student, file_name)
+
         window.addstr("\nStudent information saved successfully.")
         window.addstr("\nAll student information successfully recorded. Press any key to continue.")
         window.refresh()
@@ -219,8 +220,8 @@ class Course(Student):
             window.addstr(f"\n{file_name} already exists. Overwriting...")
         else:
             window.addstr(f"\n{file_name} does not exist. Creating a new file...")
-        with open(file_name, "wb") as f:
-            pickle.dump(self.course, f)
+        save_data_async(self.course, file_name)
+
         window.addstr("\nCourses information saved successfully.")
         window.addstr("\nAll course information successfully recorded. Press any key to continue.")
         window.refresh()
@@ -279,9 +280,17 @@ class Course(Student):
             file_name = "marks.pkl"
             if not os.path.exists(file_name):
                 window.addstr(f"\n{file_name} does not exist. A new file will be created.")
-            with open(file_name, "wb") as f:
-                pickle.dump(self.marks, f)
+            save_data_async(self.marks, file_name)
 
             window.addstr("\nMarks successfully recorded and saved to marks.txt. Press any key to continue.")
             window.refresh()
             window.getch()
+
+# Background thread
+def save_data_async(data, file_name):
+    def save():
+        with open(file_name, "wb") as f:
+            pickle.dump(data, f)
+    thread = threading.Thread(target=save)
+    thread.daemon = True
+    thread.start()
