@@ -1,9 +1,10 @@
 import re
-import curses
 import math
 import pickle
 import os
 import threading
+import tkinter as tk
+from tkinter import simpledialog, messagebox
 from domains.StudentInfo import StudentInfo
 from domains.CourseInfo import CourseInfo
 
@@ -25,110 +26,57 @@ class Student:
         self.student = []
 
     # Function to input number of students
-    def input_num(self, window, prompt):
-        if getattr(self, "num_students", 0) > 0:
-            window.clear()
-            window.addstr("You have already input the number of students.\n")
-            window.addstr("Do you want to change it? (y/n): ")
-            window.refresh()
-            curses.echo()
-            change = window.getstr().decode().strip().lower()
-            curses.noecho()
-            if change != 'y':
+    def input_num(self):
+        if self.num_students > 0:
+            if not simpledialog.askstring("Input", "You have already input the number of students. Change it? (y/n)").lower() == 'y':
                 return
-
         while True:
             try:
-                window.clear()
-                window.addstr("Enter the number of students: ")
-                window.refresh()
-                curses.echo()
-                num_students = int(window.getstr().decode().strip())
-                curses.noecho()
+                num_students = int(simpledialog.askstring("Input", "Enter the number of students:"))
                 if num_students > 0:
                     self.num_students = num_students
-                    window.addstr("\nNumber of students updated successfully. Press any key to continue.")
-                    window.getch()
+                    messagebox.showinfo("Success", "Number of students updated successfully.")
                     break
                 else:
-                    window.addstr("\nPlease enter a positive number. Press any key to retry.")
-                    window.getch()
+                    messagebox.showerror("Error", "Please enter a positive number.")
             except ValueError:
-                window.addstr("\nInvalid input. Please enter an integer. Press any key to retry.")
-                window.getch()
+                messagebox.showerror("Error", "Invalid input. Please enter an integer.")
+
 
     # Function to input student information
-    def input_std_info(self, window):
-        # Check if the number of students is set and greater than 0
+    def input_std_info(self):
         if self.num_students <= 0:
-            window.clear()
-            window.addstr("Please input the number of students first.\n")
-            window.addstr("Press any key to return to the previous menu.")
-            window.refresh()
-            window.getch()
+            messagebox.showerror("Error", "Please input the number of students first.")
             return
-
         for _ in range(self.num_students):
             while True:
-                window.clear()
-                window.addstr("Enter student information\n")
-                window.addstr(f"Number of students left to input: {self.num_students - len(self.student)}\n\n")
-
-                # Input Student ID
-                while True:
-                    window.addstr("Enter student ID: ")
-                    window.refresh()
-                    curses.echo()
-                    student_id = window.getstr().decode().strip()
-                    curses.noecho()
-                    if any(s.id == student_id for s in self.student):
-                        window.addstr("\nStudent ID already exists. Please try again.\n")
-                    else:
-                        break
-                    window.getch()
-                    window.clear()
-                    window.addstr("Enter student information\n")
-
-                # Input Student Name
-                while True:
-                    window.addstr("Enter student name: ")
-                    window.refresh()
-                    curses.echo()
-                    student_name = window.getstr().decode().strip()
-                    curses.noecho()
-                    if not re.match(r"^[A-Za-z\s]+$", student_name):
-                        window.addstr("\nInvalid name. Use only letters and spaces. Please try again.\n")
-                    else:
-                        break
-                    window.getch()
-
-                # Input Student Date of Birth
-                while True:
-                    window.addstr("Enter student date of birth (DD/MM/YYYY): ")
-                    window.refresh()
-                    curses.echo()
-                    student_dob = window.getstr().decode().strip()
-                    curses.noecho()
-                    if not re.match(r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/(\d{4})$", student_dob):
-                        window.addstr("\nInvalid date format. Use DD/MM/YYYY. Please try again.\n")
-                    else:
-                        break
-                    window.getch()
-                # Add student to the list if all inputs are valid
-                self.student.append(StudentInfo(student_id, student_name, student_dob))
-                break
+                student_id = simpledialog.askstring("Input", "Enter student ID:")
+                if any(s.id == student_id for s in self.student):
+                    messagebox.showerror("Error", "Student ID already exists. Please try again.")
+                else:
+                    break
+            while True:
+                student_name = simpledialog.askstring("Input", "Enter student name:")
+                if not re.match(r"^[A-Za-z\s]+$", student_name):
+                    messagebox.showerror("Error", "Invalid name. Use only letters and spaces.")
+                else:
+                    break
+            while True:
+                student_dob = simpledialog.askstring("Input", "Enter student date of birth (DD/MM/YYYY):")
+                if not re.match(r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$", student_dob):
+                    messagebox.showerror("Error", "Invalid date format. Use DD/MM/YYYY.")
+                else:
+                    break
+            self.student.append(StudentInfo(student_id, student_name, student_dob))
         # Save students to a file
         file_name = "students.pkl"
         if os.path.exists(file_name):
-            window.addstr(f"\n{file_name} already exists. Overwriting...")
+            messagebox.showinfo("File Exists", f"\n{file_name} already exists. Overwriting...")
         else:
-            window.addstr(f"\n{file_name} does not exist. Creating a new file...")
+            messagebox.showinfo("File Not Found", f"\n{file_name} does not exist. Creating a new file...")
         save_data_async(self.student, file_name)
+        messagebox.showinfo("Success", "Student information saved successfully.")
 
-        window.addstr("\nStudent information saved successfully.")
-        window.addstr("\nAll student information successfully recorded. Press any key to continue.")
-        window.refresh()
-        window.getch()
 
 # Class Course
 class Course(Student):
@@ -140,159 +88,118 @@ class Course(Student):
         self.gpa = {}
 
     # Function to input number of courses
-    def input_num(self, window, prompt):
-        if getattr(self, "num_courses", 0) > 0:
-            window.clear()
-            window.addstr("You have already input the number of courses.\n")
-            window.addstr("Do you want to change it? (y/n): ")
-            window.refresh()
-            curses.echo()
-            change = window.getstr().decode().strip().lower()
-            curses.noecho()
-            if change != 'y':
+    def input_num(self):
+        if self.num_courses > 0:
+            if not simpledialog.askstring("Input", "You have already input the number of courses. Change it? (y/n)").lower() == 'y':
                 return
-
         while True:
             try:
-                window.clear()
-                window.addstr("Enter the number of courses: ")
-                window.refresh()
-                curses.echo()
-                num_courses = int(window.getstr().decode().strip())
-                curses.noecho()
+                num_courses = int(simpledialog.askstring("Input", "Enter the number of courses:"))
                 if num_courses > 0:
                     self.num_courses = num_courses
-                    window.addstr("\nNumber of courses updated successfully. Press any key to continue.")
-                    window.getch()
+                    messagebox.showinfo("Success", "Number of courses updated successfully.")
                     break
                 else:
-                    window.addstr("\nPlease enter a positive number. Press any key to retry.")
-                    window.getch()
+                    messagebox.showerror("Error", "Please enter a positive number.")
             except ValueError:
-                window.addstr("\nInvalid input. Please enter an integer. Press any key to retry.")
-                window.getch()
+                messagebox.showerror("Error", "Invalid input. Please enter an integer.")
 
     # Function to input course information
-    def input_course_info(self, window):
+    def input_course_info(self):
         if self.num_courses <= 0:
-            window.clear()
-            window.addstr("Please input the number of courses first.\n")
-            window.addstr("Press any key to return to the previous menu.\n")
-            window.getch()
+            messagebox.showerror("Error", "Please input the number of courses first.")
             return
         for _ in range(self.num_courses):
             while True:
-                window.clear()
-                window.addstr("Enter course information\n")
-                window.addstr(f"Number of course left to input: {self.num_courses - len(self.course)}\n\n")
-                while True:
-                    window.addstr("Enter course ID: ")
-                    window.refresh()
-                    curses.echo()
-                    course_id = window.getstr().decode().strip()
-                    curses.noecho()
-                    if any(course.id == course_id for course in self.course):
-                        print("Course ID already exists. Please enter a unique ID.\n")
-                    else:
+                course_id = simpledialog.askstring("Input", "Enter course ID:")
+                if any(course.id == course_id for course in self.course):
+                    messagebox.showerror("Error", "Course ID already exists. Please try again.")
+                else:
+                    break
+            while True:
+                course_name = simpledialog.askstring("Input", "Enter course name:")
+                if course_name == "":
+                    messagebox.showerror("Error", "Course name cannot be empty.")
+                else:
+                    break
+            while True:
+                try:
+                    course_credit = int(simpledialog.askstring("Input", "Enter course credits (integer):"))
+                    if course_credit > 0:
                         break
-                while True:
-                    window.addstr("Enter course name: ")
-                    window.refresh()
-                    curses.echo()
-                    course_name = window.getstr().decode().strip()
-                    curses.noecho()
-                    if course_name == "":
-                        window.addstr("\nCourse name cannot be empty. Please try again.\n")
-                        window.getch()
                     else:
-                        break
-                while True:
-                    window.addstr("Enter course credits (integer): ")
-                    window.refresh()
-                    curses.echo()
-                    try:
-                        course_credit = int(window.getstr().decode().strip())
-                        curses.noecho()
-                        if course_credit <= 0:
-                            window.addstr("\nCredits must be a positive integer. Please try again.\n")
-                            window.getch()
-                        else:
-                            break
-                    except ValueError:
-                        curses.noecho()
-                        window.addstr("\nInvalid input. Please enter a valid integer for credits.\n")
-                        window.getch()
-                self.course.append(CourseInfo(course_id, course_name, course_credit))
-                break
+                        messagebox.showerror("Error", "Credits must be a positive integer.")
+                except ValueError:
+                    messagebox.showerror("Error", "Invalid input. Please enter an integer.")
+            self.course.append(CourseInfo(course_id, course_name, course_credit))
 
         # Save courses to a file
         file_name = "courses.pkl"
         if os.path.exists(file_name):
-            window.addstr(f"\n{file_name} already exists. Overwriting...")
+            messagebox.showinfo("File Exists", f"\n{file_name} already exists. Overwriting...")
         else:
-            window.addstr(f"\n{file_name} does not exist. Creating a new file...")
+            messagebox.showinfo("File Not Found", f"\n{file_name} does not exist. Creating a new file...")
         save_data_async(self.course, file_name)
-
-        window.addstr("\nCourses information saved successfully.")
-        window.addstr("\nAll course information successfully recorded. Press any key to continue.")
-        window.refresh()
-        window.getch()
+        messagebox.showinfo("Success", "Course information saved successfully.")
 
     # Function to input marks
-    def input_course_marks(self, window):
-        window.clear()
+    def input_course_marks(self):
         if not self.course:
-            window.addstr("No courses available. Press any key to return.")
-            window.getch()
+            messagebox.showerror("Error", "No courses available. Press any key to return.")
             return
         if not self.student:
-            window.clear()
-            window.addstr("No student available. Press any key to return.")
-            window.getch()
+            messagebox.showerror("Error", "No student available. Press any key to return.")
             return
-        while True:
-            window.clear()
-            window.addstr("Courses:\n")
-            for course in self.course:
-                window.addstr(f"Course ID: {course.id}, Course Name: {course.name}\n")
-            window.addstr("\n\nEnter the course ID to input marks (or press 'q' to quit): ")
-            window.refresh()
-            curses.echo()
-            course_id = window.getstr().decode().strip()
-            curses.noecho()
-            if course_id.lower() == 'q':
-                break
+        # Create a new Tkinter window for course selection
+        course_window = tk.Toplevel()
+        course_window.title("Select a Course")
+        course_window.geometry("400x300")
 
-            course = next((c for c in self.course if c.id == course_id), None)
-            if not course:
-                window.addstr("\nInvalid course ID. Press any key to return.")
-                window.getch()
+        tk.Label(course_window, text="Select a course to enter marks:", font=("Arial", 12)).pack(pady=10)
+
+        # Listbox to display courses
+        listbox = tk.Listbox(course_window, width=50, height=10)
+        for course in self.course:
+            listbox.insert(tk.END, f"{course.id} - {course.name}")
+        listbox.pack(pady=10)
+
+        def on_select():
+            selected_index = listbox.curselection()
+            if not selected_index:
+                messagebox.showerror("Error", "Please select a course.")
                 return
+            selected_course = self.course[selected_index[0]]
 
-            # Initialize marks for the course if not already present
+            course_window.destroy()  # Close the selection window
+
+            # Initialize marks dictionary if not present
+            course_id = selected_course.id
             if course_id not in self.marks:
                 self.marks[course_id] = {}
 
             # Input marks for each student
             for student in self.student:
                 while True:
-                    window.addstr(f"Enter marks for {student.name} (ID: {student.id}): ")
-                    curses.echo()
-                    mark = float(window.getstr().decode().strip())
-                    curses.noecho()
-                    if 20 >= mark >= 0:
-                        self.marks[course_id][student.id] = math.floor(mark)
-                        break
-                    else:
-                        window.addstr("Invalid input. Please enter an integer number between 20 and 0.\n")
-                        window.refresh()
+                    try:
+                        mark = simpledialog.askfloat("Input Marks", f"Enter marks for {student.name} (ID: {student.id}):")
+                        if mark is None:
+                            return
+                        if 20 >= mark >= 0:
+                            self.marks[course_id][student.id] = math.floor(mark)
+                            break
+                        else:
+                            messagebox.showerror("Error", "Invalid input. Please enter an integer number between 20 and 0.\n")
+                    except ValueError:
+                        messagebox.showerror("Error", "Invalid input. Please enter a valid number.")
 
             # Write marks to marks.pkl
             file_name = "marks.pkl"
             if not os.path.exists(file_name):
-                window.addstr(f"\n{file_name} does not exist. A new file will be created.")
+                messagebox.showinfo("File Not Found" ,f"\n{file_name} does not exist. A new file will be created.")
+            else:
+                messagebox.showinfo("File Not Found", f"\n{file_name} does not exist. Creating a new file...")
             save_data_async(self.marks, file_name)
+            messagebox.showinfo("Success", "Marks successfully recorded and saved to marks.txt. Press any key to continue.")
 
-            window.addstr("\nMarks successfully recorded and saved to marks.txt. Press any key to continue.")
-            window.refresh()
-            window.getch()
+        # Button to confirm selection
+        tk.Button(course_window, text="Select Course", command=on_select).pack(pady=10)

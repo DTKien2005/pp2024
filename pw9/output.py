@@ -1,56 +1,25 @@
-import curses
+import tkinter as tk
+from tkinter import messagebox
 import numpy as np
 
-def display_menu(window, prompt, options):
-    while True:
-        window.clear()
-        window.addstr(f"{prompt}\n\n")
-        for i, option in enumerate(options, 1):
-            window.addstr(f"{i}. {option}\n")
-        window.addstr("\nEnter your choice: ")
-        window.refresh()
-
-        try:
-            curses.echo()
-            choice = int(window.getstr().decode())
-            curses.noecho()
-            if 1 <= choice <= len(options):
-                return choice
-            else:
-                window.addstr("\nInvalid choice. Press any key to try again.")
-                window.getch()
-        except ValueError:
-            window.addstr("\nInvalid input. Please enter a valid number. Press any key to try again.")
-            window.getch()
-
 # Function to list all students
-def list_std(self, window):
-    window.clear()
+def list_std(self):
     if not self.student:
-        window.addstr("No students available.")
+        messagebox.showwarning("Warning", "No students available.")
     else:
-        window.addstr("Students:\n")
-        for student in self.student:
-            window.addstr(f"ID: {student.id}, Name: {student.name}, DOB: {student.dob}\n")
-    window.addstr("\nPress any key to return.")
-    window.getch()
+        student_info = "\n".join(f"ID: {student.id}, Name: {student.name}, DOB: {student.dob}" for student in self.student)
+        messagebox.showinfo("Students", student_info)
 
 # Function to display course
-def list_courses(self, window):
-    window.clear()
+def list_courses(self):
     if not self.course:
-        window.addstr("No courses available.")
+        messagebox.showwarning("Warning","No courses available.")
     else:
-        window.addstr("Courses:\n")
-        for course in self.course:
-            window.addstr(f"Course ID: {course.id}, Course Name: {course.name}\n")
-    window.addstr("\nPress any key to return.")
-    window.getch()
+        course_info = "\n".join(f"ID: {c.id}, Name: {c.name}, Credits: {c.credit}" for c in self.course)
+        messagebox.showinfo("Courses", course_info)
 
 # Function to calculate gpa
-def cal_gpa(self, window):
-    window.clear()
-    window.addstr("\nCalculating GPA for all students...\n")
+def cal_gpa(self):
     for student in self.student:
         credit = []
         marks = []
@@ -67,63 +36,76 @@ def cal_gpa(self, window):
                 self.gpa[student.id] = gpa
             else:
                 self.gpa[student.id] = 0
-                window.addstr(f"{student.id:}{student.name}No GPA")
-    window.addstr("GPA calculation complete.\n")
+                messagebox.showinfo("Warning",f"{student.id:}{student.name}No GPA")
+    messagebox.showinfo("GPA Calculation", "GPA calculation completed successfully!")
 
 # Function to sort desc GPA
-def sort_by_gpa_desc(self, window):
-    student_gpa = np.array([self.gpa.get(student.id, 0) for student in self.student])
-    sorted_gpa = np.argsort(-student_gpa)
-    window.addstr("\nStudents sorted by GPA (descending): \n")
-    for idx in sorted_gpa:
-        student = self.student[idx]
-        gpa = self.gpa.get(student.id, "No GPA")
-        window.addstr(f"ID: {student.id}, Name: {student.name}, GPA: {gpa}\n")
-    window.addstr("\nSorting completed. Press any key to return.")
-    window.getch()
-    return [self.student[idx] for idx in sorted_gpa]
+def sort_by_gpa_desc(self):
+    # Convert student GPAs into a NumPy array and sort indices in descending order
+    student_gpa_list = [(student, self.gpa.get(student.id, 0)) for student in self.student]
+
+    # Sort students by GPA (descending order)
+    sorted_students = sorted(student_gpa_list, key=lambda x: x[1], reverse=True)
+
+    # Format sorted students for display
+    sorted_info = "\n".join(f"ID: {student.id}, Name: {student.name}, GPA: {gpa}" for student, gpa in sorted_students)
+    messagebox.showinfo("Sorted GPA", f"Students sorted by GPA (descending):\n\n{sorted_info}")
+    return [student for student, _ in sorted_students]  # Return sorted student list
 
 # Function to show a student marks
-def show_std_marks(self, window):
+def show_std_marks(self):
     if not self.student:
-        window.addstr("No students available.\n")
-        window.addstr("Press any key to return.")
-        window.getch()
+        messagebox.showwarning("Warning", "No students available.")
         return
     if not self.marks:
-        window.addstr("No marks recorded. Press any key to return.")
-        window.getch()
+        messagebox.showwarning("Warning", "No marks recorded.")
         return
 
-    while True:
-        window.clear()
-        window.addstr("Students:\n")
-        for student in self.student:
-            window.addstr(f"ID: {student.id}, Name: {student.name}\n")
-        window.addstr("\n\nEnter student ID to view marks (or press 'q' to quit): ")
-        window.refresh()
-        curses.echo()
-        student_id = window.getstr().decode().strip()
-        curses.noecho()
-        if student_id.lower() == 'q':
-            break
+    # Create a new window for student selection
+    root = tk.Toplevel()
+    root.title("Select a Student")
+    root.geometry("400x300")
 
-        student = next((s for s in self.student if s.id == student_id), None)
-        if not student:
-            window.addstr("Invalid student ID. Press any key to try again.")
-            window.getch()
-            continue
+    tk.Label(root, text="Select a student to view marks:", font=("Arial", 12)).pack(pady=10)
 
-        window.clear()
-        window.addstr(f"Marks for Student: {student.name} (ID: {student.id})\n")
+    # Listbox to display students
+    listbox = tk.Listbox(root, width=50, height=10)
+    for student in self.student:
+        listbox.insert(tk.END, f"{student.id} - {student.name}")
+    listbox.pack(pady=10)
+
+    def on_select():
+        selected_index = listbox.curselection()
+        if not selected_index:
+            messagebox.showerror("Error", "Please select a student.")
+            return
+
+        selected_student = self.student[selected_index[0]]
+        student_id = selected_student.id
+
+        # Retrieve marks for the selected student
+        marks_info = f"Marks for {selected_student.name} (ID: {student_id}):\n"
         found_marks = False
+
         for course_id, course_marks in self.marks.items():
             if student_id in course_marks:
                 course = next((c for c in self.course if c.id == course_id), None)
                 if course:
                     found_marks = True
-                    window.addstr(f"Course: {course.name} - Mark: {course_marks[student_id]}\n")
+                    marks_info += f" - {course.name}: {course_marks[student_id]}\n"
+
         if not found_marks:
-            window.addstr("No marks recorded for this student.\n")
-        window.addstr("\nPress any key to return to the main menu.")
-        window.getch()
+            marks_info += "No marks recorded for this student."
+
+        # Hide the window before showing the marks
+        root.withdraw()
+
+        messagebox.showinfo("Student Marks", marks_info)
+
+        # Close the window after showing the marks
+        root.destroy()
+
+    # Button to confirm selection
+    tk.Button(root, text="View Marks", command=on_select).pack(pady=10)
+
+    root.mainloop()
