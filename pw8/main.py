@@ -8,7 +8,7 @@ from input import Student, Course
 from output import display_menu, list_courses, list_std, show_std_marks, cal_gpa, sort_by_gpa_desc
 
 def compress_file(output_file="students.dat"):
-    files_to_compress = ["student.pkl", "course.pkl", "marks.pkl"]
+    files_to_compress = ["students.pkl", "courses.pkl", "marks.pkl"]
     with zipfile.ZipFile(output_file, "w") as z:
         for file in files_to_compress:
             if os.path.exists(file):
