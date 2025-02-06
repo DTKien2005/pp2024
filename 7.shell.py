@@ -14,22 +14,41 @@ def os_execution(command):
 def subprocess_execution(command):
     try:
         # Handle redirection and pipes
-        if '|' in command: # In this case still error when run 3 tasks must fix
+        if '|' in command:
             processes = []
             commands = command.split('|')
+
             for i, cmd in enumerate(commands):
                 cmd = cmd.strip().split()
                 if i == 0:
+                    # First command: no stdin
                     p = sp.Popen(cmd, stdout=sp.PIPE)
+                elif i == len(commands) - 1:
+                    # Last command: redirect output to a file if specified
+                    if '>' in cmd:
+                        output_index = cmd.index('>')
+                        output_file = cmd[output_index + 1]
+                        cmd = cmd[:output_index]  # Remove '>' and file name from the command
+                        with open(output_file, 'w') as f:
+                            p = sp.Popen(cmd, stdin=processes[-1].stdout, stdout=f)
+                    elif '<' in cmd:
+                        input_index = cmd.index('<')
+                        input_file = cmd[input_index + 1]
+                        cmd = cmd[:input_index]
+                        with(input_file, 'r') as f:
+                            p = sp.Popen(cmd, stdin=processes[-1].stdout, stdout=f)
+                    else:
+                        p = sp.Popen(cmd, stdin=processes[-1].stdout, stdout=sp.PIPE)
                 else:
                     p = sp.Popen(cmd, stdin=processes[-1].stdout, stdout=sp.PIPE)
+
+                # Append the process to the list
                 processes.append(p)
 
-            outputs, errors = processes[-1].communicate()
-            if outputs:
-                print(outputs.decode())
-            if errors:
-                print(errors.decode())
+            # If the last command's output is not redirected to a file, collect it
+            if '>' not in commands[-1] and '<' not in commands[-1]:
+                final_output, _ = processes[-1].communicate()
+                print(final_output.decode())  # Decode bytes to string if needed
 
         # Make a file
         elif '>' in command:
@@ -48,8 +67,7 @@ def subprocess_execution(command):
                 sp.run(cmd, stdin=f)
         else:
             # Simple command execution
-            args = command.split()
-            result = sp.run(args, capture_output=True, text=True)
+            result = sp.run(command, shell=True, text=True)
             if result.stdout:
                 print(result.stdout)
             if result.stderr:
